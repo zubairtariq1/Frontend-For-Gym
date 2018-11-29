@@ -1,6 +1,5 @@
 .App {
   text-align: center;
-  background-color:black;
 }
 
 .header {
@@ -12,7 +11,9 @@
   justify-content: center;
   font-size: calc(15px + 2vmin);
   font-family:Georgia, 'Times New Roman', Times, serif;
-  color: rgb(178, 240, 64); 
+  color:yellow; 
   letter-spacing: 5px;
+  padding-bottom: 2px;
+  margin-bottom: 2px;
 }
 
