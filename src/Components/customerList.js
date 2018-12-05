@@ -4,7 +4,12 @@ import SkyLight from "react-skylight";
 import Moment from "moment";
 import Button from "@material-ui/core/Button";
 import CalendarToday from "@material-ui/icons/CalendarToday";
+import addcustomer from "./addcustomer";
 import ListAlt from "@material-ui/icons/ListAlt";
+import AddIcon from "@material-ui/icons/Add";
+import DeleteIcon from "@material-ui/icons/Delete";
+import Snackbar from '@material-ui/core/Snackbar';
+import Fade from '@material-ui/core/Fade';
 import "react-table/react-table.css";
 import '../App.css';
 
@@ -14,10 +19,12 @@ class Customerlist extends Component {
     this.state = {
       customers: [],
       trainings: [],
-      alltrainings: []
+      alltrainings: [],
+      showSnack : false,
     };
     this.addModal1 = React.createRef();
     this.addModal2 = React.createRef();
+    this.addModal3 = React.createRef();
   }
 
   componentDidMount() {
@@ -38,11 +45,35 @@ class Customerlist extends Component {
     fetch("https://customerrest.herokuapp.com/gettrainings")
       .then(response => response.json())
       .then(responseData => {
-        this.setState({ alltrainings: responseData });
+        this.setState({ alltrainings: responseData});
       });
     this.addModal1.current.show();
   };
 
+  deleteCustomer = (link) => {
+    fetch(link, {method: 'DELETE'})
+    .then(response => {
+        this.listCustomers();
+        this.setState({showDeleteSnack: true, msg: 'Customer Deleted'});
+    })
+}
+
+saveCustomers = (customer) => {
+  fetch('https://customerrest.herokuapp.com/api/customers',
+  {method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify(customer)
+  })
+  .then(response => {
+      
+      this.listCustomers();
+      this.setState({showSnack: true, msg: 'Customer Added' })
+  })
+  .catch(err => {
+      console.error(err);
+      this.setState({showSnack: true, msg: 'Error'})
+  })
+};
   // Get trainings of a specific customer
   getTrainings = link => {
     fetch(link)
@@ -109,7 +140,33 @@ class Customerlist extends Component {
           ><CalendarToday style={{color: 'blue'}}></CalendarToday>
           </Button>
         )
-      }
+      },
+      {
+        
+          Header: "Delete",
+          accessor: "links[0].href",
+          maxWidth: 80,
+          filterable: false,
+          sortable: false,
+          Cell: ({ value }) => (
+          <Button color="secondary" variant= "contained"
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Are you sure you want to delete this customer permanently?"
+                    )
+                  )
+                    this.deleteCustomer(value);
+                    this.state.showSnack= true;
+                }}
+                aria-label="Delete"
+              >
+                <DeleteIcon fontSize="small" />
+              </Button>
+            
+          )
+        }
+      
     ];
 
     const trainingColumns = [
@@ -154,7 +211,8 @@ class Customerlist extends Component {
 
     return (
       <div>
-        <Button id="showallbutton" variant="contained" color="secondary" padding-bottom="2px" onClick={this.listAllTrainings}><ListAlt style={{color: 'yellow'}}></ListAlt><p style={{color: 'yellow'}}>List all trainings</p></Button>
+        <Button id="showallbutton" variant="contained" color="primary" padding-bottom="2px" onClick={this.listAllTrainings}><ListAlt style={{color: 'yellow'}}></ListAlt><p style={{color: 'yellow'}}>List all trainings</p></Button>
+        <addcustomer saveCustomers={this.saveCustomers} />
         <ReactTable
           filterable={true}
           defaultPageSize={10}
@@ -182,6 +240,13 @@ class Customerlist extends Component {
             columns={trainingColumns}
           />
         </SkyLight>
+        <Snackbar 
+        autoHideDuration={5000}
+        open={this.state.showSnack}
+        onClose={this.handleClose}
+        TransitionComponent={Fade}
+        message={this.state.msg}
+        />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import Customerlist from './Components/customerList';
+import Addcustomer from './Components/addcustomer';
 
 class App extends Component {
   render() {
@@ -11,6 +12,7 @@ class App extends Component {
             The Cool Gym
           </h2>
         </header>
+        <Addcustomer />
         <Customerlist />
       </div>
     );
